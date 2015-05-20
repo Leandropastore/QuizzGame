@@ -26,7 +26,7 @@ public class QuizzGame implements Comm, Serializable{
     private boolean enabled;
     
     public void printParticipants(){
-        
+        System.out.println("Participants: ");
         for(Participant participant:participants)
             System.out.println(participant);
     
@@ -43,6 +43,7 @@ public class QuizzGame implements Comm, Serializable{
         return enabled;
     }
 
+    @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -58,7 +59,8 @@ public class QuizzGame implements Comm, Serializable{
     
         this.currentServer = participant;
         if(participants.size()>1)
-            this.nextServer = participants.get(participants.indexOf(this.currentServer)+1);
+            this.nextServer = participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))+1);
+        
     
     }
     
@@ -95,8 +97,8 @@ public class QuizzGame implements Comm, Serializable{
     @Override
     public boolean amINext(Participant participant){
     
-        int nextIndex = this.participants.indexOf(nextServer);
-        int requestIndex = this.participants.indexOf(participant);
+        int nextIndex = this.participants.indexOf(this.findParticipantById(nextServer.getId()));
+        int requestIndex = this.participants.indexOf(this.findParticipantById(participant.getId()));
         if(nextIndex==requestIndex)
             return true;
         return false;
@@ -117,17 +119,15 @@ public class QuizzGame implements Comm, Serializable{
     public QuizzGame cycleServer(){
     
         this.currentServer = this.nextServer;
-        if(this.participants.indexOf(this.currentServer)==this.participants.size()-1)
+        if(this.participants.indexOf(this.findParticipantById(this.currentServer.getId()))==this.participants.size()-1)
             this.nextServer = this.participants.get(0);
         else
-            this.nextServer = this.participants.get(this.participants.indexOf(this.currentServer)+1);
-        
-        this.enabled = false;
+            this.nextServer = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentServer.getId()))+1);
         
         return this;
     
     }
-
+    
     @Override
     public Question getCurrentQuestion() {
         return currentQuestion;
@@ -136,37 +136,41 @@ public class QuizzGame implements Comm, Serializable{
     @Override
     public boolean sendAnswer(String answer,Participant participant,double elapsedTime){
     
-        participants.get(participants.indexOf(participant)).setReady(false);
+        participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(false);
+        participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))).setReady(false);
         
         if(this.currentQuestion.checkAnswer(answer)){
-            participants.get(participants.indexOf(participant)).addScore(1);
-            participants.get(participants.indexOf(currentServer)).subtractScore(1);
-            System.out.println(participants.get(participants.indexOf(participant)).getName()+" got the question right!");
+            participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).addScore(1);
+            participants.get(participants.indexOf(this.findParticipantById(currentServer.getId()))).subtractScore(1);
+            System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName()+" got the question right!");
             return true;
         }
         else{
-            participants.get(participants.indexOf(participant)).subtractScore(1);
-            participants.get(participants.indexOf(currentServer)).addScore(1);
-            System.out.println(participants.get(participants.indexOf(participant)).getName()+" got the question wrong!");
+            participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).subtractScore(1);
+            participants.get(participants.indexOf(this.findParticipantById(currentServer.getId()))).addScore(1);
+            System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName()+" got the question wrong!");
             return false;
         }
     }
     
     public void serverMenu(){
     
-        if(this.checkParticipantsReady())
-            System.out.println("Waiting for players' answers.");
-        while(!checkParticipantsNotReady());
-        this.printParticipants();
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Are you ready to write your question? (if yes, press enter)");
+        scanner.nextLine();
+        
+        participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))).setReady(true);
+        while(!checkParticipantsReady());
+        this.printParticipants();
+        
         System.out.println("Please, write your question.");
         String question = scanner.nextLine();
         System.out.println("What is the answer to that question?");
         String answer = scanner.nextLine();
         
         this.currentQuestion = new Question(question,answer);
-        participants.get(participants.indexOf(this.currentServer)).setReady(true);
-        
+        while(!this.checkParticipantsNotReady());
+        this.currentQuestion = null;
     
     }
     

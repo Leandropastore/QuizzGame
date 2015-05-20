@@ -58,7 +58,7 @@ public class QuizzManager {
                 Registry registry = LocateRegistry.getRegistry();
                 registry.rebind("quizzgame", stub);
                 localParticipant = local.addParticipant(Inet4Address.getLocalHost().getHostAddress(), name);
-                System.out.println("Press enter when you have finished waiting");
+                System.out.println("Press enter when you have finished waiting for other players.");
                 scanner.nextLine();
                 local.setup(localParticipant);
             }
@@ -98,7 +98,7 @@ public class QuizzManager {
                 
                 }
                 if(remote.checkParticipantsReady()&&remote.isQuestionReady()){
-                    System.out.println(remote.getCurrentQuestion());
+                    System.out.println(remote.getCurrentQuestion().getQuestion());
                     System.out.println("Answer?");
                     tStart = System.currentTimeMillis();
                     answer = scanner.nextLine();
@@ -110,6 +110,9 @@ public class QuizzManager {
                     else
                         System.out.println("You got it wrong! =(");
                     localParticipant.setReady(false);
+                    if(remote.amINext(localParticipant))
+                        local = remote.cycleServer();
+                        remote.setEnabled(false);
                 }
                 try{
                     TimeUnit.SECONDS.sleep(1);

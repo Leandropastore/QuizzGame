@@ -23,5 +23,6 @@ public interface Comm extends Remote{
     public boolean checkParticipantsReady() throws RemoteException;
     public boolean checkParticipantsNotReady() throws RemoteException;
     public boolean isQuestionReady() throws RemoteException;
+    public void setEnabled(boolean state) throws RemoteException;
     
 }

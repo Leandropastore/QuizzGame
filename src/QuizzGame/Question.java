@@ -52,12 +52,12 @@ public class Question implements Serializable{
     public String format(String string){
     
         string = string.toLowerCase();
-        string = string.replaceAll(" ", "");
-        string = string.replaceAll("-", "");
-        string = string.replaceAll(".", "");
-        string = string.replaceAll(",", "");
-        string = string.replaceAll("'", "");
-        string = string.replaceAll("\"", "");
+        string = string.replace(" ", "");
+        string = string.replace("-", "");
+        string = string.replace(",", "");
+        string = string.replace("'", "");
+        string = string.replace(".", "");
+        string = string.replace("\"", "");
         
         return string;
     
