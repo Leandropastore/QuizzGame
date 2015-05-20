@@ -62,6 +62,15 @@ public class QuizzGame implements Comm, Serializable{
     
     }
     
+    public Participant findParticipantById(int id){
+    
+        for(Participant p:participants)
+            if(p.getId()==id)
+                return p;
+        return null;
+    
+    }
+    
     @Override
     public Participant addParticipant(String IPAddress, String name){
     
@@ -75,7 +84,8 @@ public class QuizzGame implements Comm, Serializable{
     @Override
     public void changeReady(Participant participant,boolean state){
     
-        participants.get(participants.indexOf(participant)).setReady(state);
+        
+        participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(state);
         
         if(state)
             System.out.println(participant.getName()+" is ready.");
