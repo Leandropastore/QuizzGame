@@ -24,5 +24,6 @@ public interface Comm extends Remote{
     public boolean checkParticipantsNotReady() throws RemoteException;
     public boolean isQuestionReady() throws RemoteException;
     public void setEnabled(boolean state) throws RemoteException;
+    public String fetchNextServerAddress() throws RemoteException;
     
 }

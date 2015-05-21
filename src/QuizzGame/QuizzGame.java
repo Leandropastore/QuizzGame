@@ -171,6 +171,7 @@ public class QuizzGame implements Comm, Serializable{
         this.currentQuestion = new Question(question,answer);
         while(!this.checkParticipantsNotReady());
         this.currentQuestion = null;
+        
     
     }
     
@@ -181,6 +182,13 @@ public class QuizzGame implements Comm, Serializable{
             if(!participant.isReady())
                 return false;
         return true;
+    
+    }
+    
+    @Override
+    public String fetchNextServerAddress(){
+    
+        return this.nextServer.getIPAddress();
     
     }
     
