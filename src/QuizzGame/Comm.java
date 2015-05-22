@@ -28,5 +28,6 @@ public interface Comm extends Remote{
     public Participant findParticipantById(int id) throws RemoteException;
     public void placeToken(boolean state,Participant participant) throws RemoteException;
     public Participant checkLastAnswer() throws RemoteException;
+    public void setLastAnswer(Participant participant) throws RemoteException;
     
 }

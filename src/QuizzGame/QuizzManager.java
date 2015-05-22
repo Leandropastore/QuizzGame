@@ -72,7 +72,7 @@ public class QuizzManager {
             try {
                 clientRegistry = LocateRegistry.getRegistry(ipAddress);
                 remote = (Comm) clientRegistry.lookup("quizzgame");
-                localParticipant = remote.addParticipant(response, name);
+                localParticipant = remote.addParticipant(Inet4Address.getLocalHost().getHostAddress(), name);
             } catch (RemoteException ex) {
                 Logger.getLogger(QuizzManager.class.getName()).log(Level.SEVERE, null, ex);
             } catch (NotBoundException ex) {
@@ -90,6 +90,8 @@ public class QuizzManager {
                     remote.changeReady(localParticipant, true);
                     while (!remote.checkParticipantsReady());
 
+                    
+                    remote.setLastAnswer(null);
                     System.out.println("Please, write your question.");
                     String question = scanner.nextLine();
                     System.out.println("What is the answer to that question?");
@@ -107,9 +109,7 @@ public class QuizzManager {
                             }
                         }
                     }
-                    
                     remote.setCurrentQuestion(null);
-                    remote.placeToken(false, localParticipant);
                 } else {
                     if (!remote.findParticipantById(localParticipant.getId()).isReady()) {
 
@@ -159,8 +159,6 @@ public class QuizzManager {
                     local.setCurrentQuestion(new Question(question, answer));
                     while (!local.checkParticipantsNotReady());
                     local.setCurrentQuestion(null);
-                    local.setLastAnswer(null);
-                    local.placeToken(false, localParticipant);
                 } else {
                     if (!localParticipant.isReady()) {
 
