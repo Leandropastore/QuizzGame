@@ -17,6 +17,15 @@ public class Participant implements Serializable{
     private String name;
     private int id;
     private boolean ready;
+    private boolean token;
+
+    public boolean hasToken() {
+        return token;
+    }
+
+    public void setToken(boolean token) {
+        this.token = token;
+    }
 
     public boolean isReady() {
         return ready;

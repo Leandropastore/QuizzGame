@@ -20,10 +20,9 @@ public class QuizzGame implements Comm, Serializable{
     
     private Question currentQuestion;
     
-    private Participant currentServer;
-    private Participant nextServer;
+    private Participant currentQuestioner;
+    private Participant nextQuestioner;
     
-    private boolean enabled;
     
     public void printParticipants(){
         System.out.println("Participants: ");
@@ -39,13 +38,9 @@ public class QuizzGame implements Comm, Serializable{
         
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
     @Override
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public void setCurrentQuestion(Question currentQuestion) {
+        this.currentQuestion = currentQuestion;
     }
     
     public QuizzGame(){
@@ -57,19 +52,27 @@ public class QuizzGame implements Comm, Serializable{
     
     public void setup(Participant participant){
     
-        this.currentServer = participant;
+        this.currentQuestioner = participant;
         if(participants.size()>1)
-            this.nextServer = participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))+1);
+            this.nextQuestioner = participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))+1);
         
     
     }
     
+    @Override
     public Participant findParticipantById(int id){
     
         for(Participant p:participants)
             if(p.getId()==id)
                 return p;
         return null;
+    
+    }
+    
+    @Override
+    public void placeToken(boolean state,Participant participant){
+    
+        participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setToken(state);
     
     }
     
@@ -85,7 +88,6 @@ public class QuizzGame implements Comm, Serializable{
     
     @Override
     public void changeReady(Participant participant,boolean state){
-    
         
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(state);
         
@@ -97,7 +99,7 @@ public class QuizzGame implements Comm, Serializable{
     @Override
     public boolean amINext(Participant participant){
     
-        int nextIndex = this.participants.indexOf(this.findParticipantById(nextServer.getId()));
+        int nextIndex = this.participants.indexOf(this.findParticipantById(nextQuestioner.getId()));
         int requestIndex = this.participants.indexOf(this.findParticipantById(participant.getId()));
         if(nextIndex==requestIndex)
             return true;
@@ -116,15 +118,17 @@ public class QuizzGame implements Comm, Serializable{
     }
     
     @Override
-    public QuizzGame cycleServer(){
+    public void cycleQuestioner(){
     
-        this.currentServer = this.nextServer;
-        if(this.participants.indexOf(this.findParticipantById(this.currentServer.getId()))==this.participants.size()-1)
-            this.nextServer = this.participants.get(0);
-        else
-            this.nextServer = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentServer.getId()))+1);
+        this.currentQuestioner = this.nextQuestioner;
+        this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
+        if(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))==this.participants.size()-1){
+            this.nextQuestioner = this.participants.get(0);
+        }
+        else{
+            this.nextQuestioner = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))+1);
+        }
         
-        return this;
     
     }
     
@@ -137,22 +141,22 @@ public class QuizzGame implements Comm, Serializable{
     public boolean sendAnswer(String answer,Participant participant,double elapsedTime){
     
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(false);
-        participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))).setReady(false);
+        participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))).setReady(false);
         
         if(this.currentQuestion.checkAnswer(answer)){
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).addScore(1);
-            participants.get(participants.indexOf(this.findParticipantById(currentServer.getId()))).subtractScore(1);
+            participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).subtractScore(1);
             System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName()+" got the question right!");
             return true;
         }
         else{
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).subtractScore(1);
-            participants.get(participants.indexOf(this.findParticipantById(currentServer.getId()))).addScore(1);
+            participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).addScore(1);
             System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName()+" got the question wrong!");
             return false;
         }
     }
-    
+    /*
     public void serverMenu(){
     
         Scanner scanner = new Scanner(System.in);
@@ -173,7 +177,7 @@ public class QuizzGame implements Comm, Serializable{
         this.currentQuestion = null;
         
     
-    }
+    }*/
     
     @Override
     public boolean checkParticipantsReady(){
@@ -188,7 +192,7 @@ public class QuizzGame implements Comm, Serializable{
     @Override
     public String fetchNextServerAddress(){
     
-        return this.nextServer.getIPAddress();
+        return this.nextQuestioner.getIPAddress();
     
     }
     

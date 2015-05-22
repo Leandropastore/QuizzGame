@@ -16,14 +16,16 @@ public interface Comm extends Remote{
     
     public Participant addParticipant(String IPAddress, String name) throws RemoteException;
     public boolean amINext(Participant participant) throws RemoteException;
-    public QuizzGame cycleServer() throws RemoteException;
+    public void cycleQuestioner() throws RemoteException;
     public Question getCurrentQuestion() throws RemoteException;
+    public void setCurrentQuestion(Question currentQuestion) throws RemoteException;
     public boolean sendAnswer(String answer,Participant participant,double elapsedTime) throws RemoteException;
     public void changeReady(Participant participant,boolean state) throws RemoteException;
     public boolean checkParticipantsReady() throws RemoteException;
     public boolean checkParticipantsNotReady() throws RemoteException;
     public boolean isQuestionReady() throws RemoteException;
-    public void setEnabled(boolean state) throws RemoteException;
     public String fetchNextServerAddress() throws RemoteException;
+    public Participant findParticipantById(int id) throws RemoteException;
+    public void placeToken(boolean state,Participant participant) throws RemoteException;
     
 }

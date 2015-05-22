@@ -28,7 +28,11 @@ public class QuizzManager {
         Participant localParticipant = null;
         Comm remote = null;
         String answer;
-        Registry registry;
+        String response;
+        String name;
+        String ipAddress = null;
+        Registry serverRegistry;
+        Registry clientRegistry;
 
         long tStart;
         long tEnd;
@@ -36,40 +40,37 @@ public class QuizzManager {
         double elapsedSeconds;
 
         Scanner scanner = new Scanner(System.in);
+
         System.out.println("\nAre you starting as a server? (yes / no)");
-        String response = scanner.nextLine();
-        if (response.equals("yes")) {
-            local.setEnabled(true);
-        } else if (response.equals("no")) {
-            local.setEnabled(false);
+        response = scanner.nextLine();
+        if (response.equals("no")) {
             System.out.println("\nPlease, provide the IP address to connect: ");
-            response = scanner.nextLine();
+            ipAddress = scanner.nextLine();
         }
 
         System.out.println("\nWhat is your name?");
-        String name = scanner.nextLine();
+        name = scanner.nextLine();
 
         System.out.println(Inet4Address.getLocalHost().getHostAddress());
 
-        if (local.isEnabled()) {
+        if (response.equals("yes")) {
             try {
                 Comm stub = (Comm) UnicastRemoteObject.exportObject(local, 0);
                 LocateRegistry.createRegistry(1099);
-                registry = LocateRegistry.getRegistry();
-                registry.rebind("quizzgame", stub);
+                serverRegistry = LocateRegistry.getRegistry();
+                serverRegistry.rebind("quizzgame", stub);
                 localParticipant = local.addParticipant(Inet4Address.getLocalHost().getHostAddress(), name);
+                local.placeToken(true, localParticipant);
                 System.out.println("Press enter when you have finished waiting for other players.");
                 scanner.nextLine();
                 local.setup(localParticipant);
             } catch (RemoteException r) {
-
                 System.err.println("Error: " + r);
-
             }
         } else {
             try {
-                registry = LocateRegistry.getRegistry(response);
-                remote = (Comm) registry.lookup("quizzgame");
+                clientRegistry = LocateRegistry.getRegistry(ipAddress);
+                remote = (Comm) clientRegistry.lookup("quizzgame");
                 localParticipant = remote.addParticipant(response, name);
             } catch (RemoteException ex) {
                 Logger.getLogger(QuizzManager.class.getName()).log(Level.SEVERE, null, ex);
@@ -80,66 +81,108 @@ public class QuizzManager {
 
         while (true) {
 
-            if (local.isEnabled()) {
-                local.serverMenu();
-            } else {
-                if (!localParticipant.isReady()) {
-
-                    System.out.println("Press enter if you are ready...");
+            if (remote != null) {
+                if (remote.findParticipantById(localParticipant.getId()).hasToken()) {
+                    System.out.println("Are you ready to write your question? (if yes, press enter)");
                     scanner.nextLine();
+
                     remote.changeReady(localParticipant, true);
-                    localParticipant.setReady(true);
-                    if (!remote.checkParticipantsReady()) {
-                        System.out.println("Waiting for other participants...");
-                    }
+                    while (!remote.checkParticipantsReady());
 
-                }
-                if (remote.checkParticipantsReady() && remote.isQuestionReady()) {
-                    System.out.println(remote.getCurrentQuestion().getQuestion());
-                    System.out.println("Answer?");
-                    tStart = System.currentTimeMillis();
+                    System.out.println("Please, write your question.");
+                    String question = scanner.nextLine();
+                    System.out.println("What is the answer to that question?");
                     answer = scanner.nextLine();
-                    tEnd = System.currentTimeMillis();
-                    tDelta = tEnd - tStart;
-                    elapsedSeconds = tDelta / 1000.0;
-                    if (remote.sendAnswer(answer, localParticipant, elapsedSeconds)) {
-                        System.out.println("You got it right!");
-                    } else {
-                        System.out.println("You got it wrong! =(");
-                    }
-                    localParticipant.setReady(false);
-                    
-                    if (remote.amINext(localParticipant)&&remote.checkParticipantsNotReady()) {
-                        local = remote.cycleServer();
-                        remote.setEnabled(false);
-                        
-                        Comm stub = (Comm) UnicastRemoteObject.exportObject(local, 0);
-                        LocateRegistry.createRegistry(1099);
-                        registry = LocateRegistry.getRegistry();
-                        registry.rebind("quizzgame", stub);
-                        System.out.println("Press enter when you have finished waiting for other players.");
-                        scanner.nextLine();
-                    } else if(remote.checkParticipantsNotReady()) {
 
-                        try {
-                            registry = LocateRegistry.getRegistry(remote.fetchNextServerAddress());
-                            remote = (Comm) registry.lookup("quizzgame");
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(QuizzManager.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (NotBoundException ex) {
-                            Logger.getLogger(QuizzManager.class.getName()).log(Level.SEVERE, null, ex);
+                    remote.setCurrentQuestion(new Question(question, answer));
+                    while (!remote.checkParticipantsNotReady());
+                    remote.setCurrentQuestion(null);
+                    remote.placeToken(false, localParticipant);
+                } else {
+                    if (!remote.findParticipantById(localParticipant.getId()).isReady()) {
+
+                        System.out.println("Press enter if you are ready...");
+                        scanner.nextLine();
+                        remote.changeReady(localParticipant, true);
+                        if (!remote.checkParticipantsReady()) {
+                            System.out.println("Waiting for other participants...");
                         }
 
                     }
+                    if (remote.checkParticipantsReady() && remote.isQuestionReady()) {
+                        System.out.println(remote.getCurrentQuestion().getQuestion());
+                        System.out.println("Answer?");
+                        tStart = System.currentTimeMillis();
+                        answer = scanner.nextLine();
+                        tEnd = System.currentTimeMillis();
+                        tDelta = tEnd - tStart;
+                        elapsedSeconds = tDelta / 1000.0;
+                        if (remote.sendAnswer(answer, localParticipant, elapsedSeconds)) {
+                            System.out.println("You got it right!");
+                        } else {
+                            System.out.println("You got it wrong! =(");
+                        }
+                        localParticipant.setReady(false);
+                        while(!remote.checkParticipantsNotReady());
+                        if (remote.amINext(localParticipant)) {
+                            remote.cycleQuestioner();
+                        }
+                    }
                 }
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                    System.err.println("Error: " + e);
+
+            } 
+            else {
+                if (local.findParticipantById(localParticipant.getId()).hasToken()) {
+                    System.out.println("Are you ready to write your question? (if yes, press enter)");
+                    scanner.nextLine();
+
+                    local.changeReady(localParticipant, true);
+                    while (!local.checkParticipantsReady());
+
+                    System.out.println("Please, write your question.");
+                    String question = scanner.nextLine();
+                    System.out.println("What is the answer to that question?");
+                    answer = scanner.nextLine();
+
+                    local.setCurrentQuestion(new Question(question, answer));
+                    while (!local.checkParticipantsNotReady());
+                    local.setCurrentQuestion(null);
+                    local.placeToken(false, localParticipant);
+                } else {
+                    if (!localParticipant.isReady()) {
+
+                        System.out.println("Press enter if you are ready...");
+                        scanner.nextLine();
+                        local.changeReady(localParticipant, true);
+                        localParticipant.setReady(true);
+                        if (!local.checkParticipantsReady()) {
+                            System.out.println("Waiting for other participants...");
+                        }
+
+                    }
+                    if (local.checkParticipantsReady() && local.isQuestionReady()) {
+                        System.out.println(local.getCurrentQuestion().getQuestion());
+                        System.out.println("Answer?");
+                        tStart = System.currentTimeMillis();
+                        answer = scanner.nextLine();
+                        tEnd = System.currentTimeMillis();
+                        tDelta = tEnd - tStart;
+                        elapsedSeconds = tDelta / 1000.0;
+                        if (local.sendAnswer(answer, localParticipant, elapsedSeconds)) {
+                            System.out.println("You got it right!");
+                        } else {
+                            System.out.println("You got it wrong! =(");
+                        }
+                        localParticipant.setReady(false);
+                        while(!local.checkParticipantsNotReady());
+                        if (local.amINext(localParticipant)) {
+                            local.cycleQuestioner();
+                        }
+                    }
+
                 }
 
             }
-
         }
 
     }
