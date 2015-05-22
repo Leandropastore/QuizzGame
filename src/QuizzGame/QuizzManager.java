@@ -100,7 +100,7 @@ public class QuizzManager {
                         lastAnswer = remote.checkLastAnswer();
                         if(lastAnswer!=null){
                             if(lastAnswer.isReady()){
-                                System.out.println(lastAnswer.getName()+" got the questio right!");
+                                System.out.println(lastAnswer.getName()+" got the question right!");
                             }
                             else{
                                 System.out.println(lastAnswer.getName()+" got the question wrong!");

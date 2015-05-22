@@ -170,7 +170,7 @@ public class QuizzGame implements Comm, Serializable {
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).subtractScore(1);
             participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).addScore(1);
             this.lastAnswer = participant;
-            this.lastAnswer.setReady(true);
+            this.lastAnswer.setReady(false);
             System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName() + " got the question wrong!");
             return false;
         }
