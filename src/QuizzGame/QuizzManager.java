@@ -26,6 +26,7 @@ public class QuizzManager {
 
         QuizzGame local = new QuizzGame();
         Participant localParticipant = null;
+        Participant lastAnswer = null;
         Comm remote = null;
         String answer;
         String response;
@@ -95,7 +96,18 @@ public class QuizzManager {
                     answer = scanner.nextLine();
 
                     remote.setCurrentQuestion(new Question(question, answer));
-                    while (!remote.checkParticipantsNotReady());
+                    while (!remote.checkParticipantsNotReady()){
+                        lastAnswer = remote.checkLastAnswer();
+                        if(lastAnswer!=null){
+                            if(lastAnswer.isReady()){
+                                System.out.println(lastAnswer.getName()+" got the questio right!");
+                            }
+                            else{
+                                System.out.println(lastAnswer.getName()+" got the question wrong!");
+                            }
+                        }
+                    }
+                    
                     remote.setCurrentQuestion(null);
                     remote.placeToken(false, localParticipant);
                 } else {

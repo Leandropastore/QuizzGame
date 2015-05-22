@@ -13,197 +13,220 @@ import java.util.Scanner;
  *
  * @author Leandro
  */
-public class QuizzGame implements Comm, Serializable{
-    
+public class QuizzGame implements Comm, Serializable {
+
     private ArrayList<Participant> participants = new ArrayList<Participant>();
     private int id;
-    
+
     private Question currentQuestion;
-    
+
     private Participant currentQuestioner;
     private Participant nextQuestioner;
-    
-    
-    public void printParticipants(){
+    private Participant lastAnswer;
+
+    public void printParticipants() {
         System.out.println("Participants: ");
-        for(Participant participant:participants)
+        for (Participant participant : participants) {
             System.out.println(participant);
-    
+        }
+
     }
-    
-    public int generateId(){
-    
+
+    public int generateId() {
+
         this.id++;
         return id;
-        
+
     }
 
     @Override
     public void setCurrentQuestion(Question currentQuestion) {
         this.currentQuestion = currentQuestion;
     }
-    
-    public QuizzGame(){
-    
+
+    public QuizzGame() {
+
         this.id = 0;
         this.currentQuestion = null;
-        
+
     }
-    
-    public void setup(Participant participant){
-    
+
+    public void setup(Participant participant) {
+
         this.currentQuestioner = participant;
-        if(participants.size()>1)
-            this.nextQuestioner = participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))+1);
-        
-    
+        if (participants.size() > 1) {
+            this.nextQuestioner = participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) + 1);
+        }
+
     }
-    
+
     @Override
-    public Participant findParticipantById(int id){
-    
-        for(Participant p:participants)
-            if(p.getId()==id)
+    public Participant findParticipantById(int id) {
+
+        for (Participant p : participants) {
+            if (p.getId() == id) {
                 return p;
+            }
+        }
         return null;
-    
+
     }
-    
+
     @Override
-    public void placeToken(boolean state,Participant participant){
-    
+    public void placeToken(boolean state, Participant participant) {
+
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setToken(state);
-    
+
     }
-    
+
     @Override
-    public Participant addParticipant(String IPAddress, String name){
-    
-        Participant participant = new Participant(name,IPAddress,this.generateId());
+    public Participant addParticipant(String IPAddress, String name) {
+
+        Participant participant = new Participant(name, IPAddress, this.generateId());
         this.participants.add(participant);
-        System.out.println(name+" entered the game");
+        System.out.println(name + " entered the game");
         return participant;
-        
+
     }
-    
+
     @Override
-    public void changeReady(Participant participant,boolean state){
-        
+    public void changeReady(Participant participant, boolean state) {
+
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(state);
-        
-        if(state)
-            System.out.println(participant.getName()+" is ready.");
-    
+
+        if (state) {
+            System.out.println(participant.getName() + " is ready.");
+        }
+
     }
-    
+
     @Override
-    public boolean amINext(Participant participant){
-    
+    public boolean amINext(Participant participant) {
+
         int nextIndex = this.participants.indexOf(this.findParticipantById(nextQuestioner.getId()));
         int requestIndex = this.participants.indexOf(this.findParticipantById(participant.getId()));
-        if(nextIndex==requestIndex)
+        if (nextIndex == requestIndex) {
             return true;
+        }
         return false;
-    
-            
+
     }
-    
+
     @Override
-    public boolean isQuestionReady(){
-    
-        if(currentQuestion == null)
+    public boolean isQuestionReady() {
+
+        if (currentQuestion == null) {
             return false;
+        }
         return true;
-        
+
     }
-    
+
     @Override
-    public void cycleQuestioner(){
-    
+    public void cycleQuestioner() {
+
         this.currentQuestioner = this.nextQuestioner;
         this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
-        if(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))==this.participants.size()-1){
+        if (this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) == this.participants.size() - 1) {
             this.nextQuestioner = this.participants.get(0);
+        } else {
+            this.nextQuestioner = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) + 1);
         }
-        else{
-            this.nextQuestioner = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))+1);
-        }
-        
-    
+
     }
-    
+
     @Override
     public Question getCurrentQuestion() {
         return currentQuestion;
     }
-    
+
     @Override
-    public boolean sendAnswer(String answer,Participant participant,double elapsedTime){
-    
+    public Participant checkLastAnswer() {
+
+        Participant temp;
+        if (this.lastAnswer != null) {
+            temp = this.lastAnswer;
+            this.lastAnswer = null;
+            return temp;
+        }
+        return null;
+
+    }
+
+    @Override
+    public boolean sendAnswer(String answer, Participant participant, double elapsedTime) {
+
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(false);
         participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))).setReady(false);
-        
-        if(this.currentQuestion.checkAnswer(answer)){
+
+        if (this.currentQuestion.checkAnswer(answer)) {
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).addScore(1);
             participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).subtractScore(1);
-            System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName()+" got the question right!");
+            this.lastAnswer = participant;
+            this.lastAnswer.setReady(true);
+            System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName() + " got the question right!");
             return true;
-        }
-        else{
+        } else {
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).subtractScore(1);
             participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).addScore(1);
-            System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName()+" got the question wrong!");
+            this.lastAnswer = participant;
+            this.lastAnswer.setReady(true);
+            System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName() + " got the question wrong!");
             return false;
         }
     }
     /*
-    public void serverMenu(){
+     public void serverMenu(){
     
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Are you ready to write your question? (if yes, press enter)");
-        scanner.nextLine();
+     Scanner scanner = new Scanner(System.in);
+     System.out.println("Are you ready to write your question? (if yes, press enter)");
+     scanner.nextLine();
         
-        participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))).setReady(true);
-        while(!checkParticipantsReady());
-        this.printParticipants();
+     participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))).setReady(true);
+     while(!checkParticipantsReady());
+     this.printParticipants();
         
-        System.out.println("Please, write your question.");
-        String question = scanner.nextLine();
-        System.out.println("What is the answer to that question?");
-        String answer = scanner.nextLine();
+     System.out.println("Please, write your question.");
+     String question = scanner.nextLine();
+     System.out.println("What is the answer to that question?");
+     String answer = scanner.nextLine();
         
-        this.currentQuestion = new Question(question,answer);
-        while(!this.checkParticipantsNotReady());
-        this.currentQuestion = null;
+     this.currentQuestion = new Question(question,answer);
+     while(!this.checkParticipantsNotReady());
+     this.currentQuestion = null;
         
     
-    }*/
-    
+     }*/
+
     @Override
-    public boolean checkParticipantsReady(){
-    
-        for(Participant participant:participants)
-            if(!participant.isReady())
+    public boolean checkParticipantsReady() {
+
+        for (Participant participant : participants) {
+            if (!participant.isReady()) {
                 return false;
+            }
+        }
         return true;
-    
+
     }
-    
+
     @Override
-    public String fetchNextServerAddress(){
-    
+    public String fetchNextServerAddress() {
+
         return this.nextQuestioner.getIPAddress();
-    
+
     }
-    
+
     @Override
-    public boolean checkParticipantsNotReady(){
-    
-        for(Participant participant:participants)
-            if(participant.isReady())
+    public boolean checkParticipantsNotReady() {
+
+        for (Participant participant : participants) {
+            if (participant.isReady()) {
                 return false;
+            }
+        }
         return true;
-    
+
     }
-    
+
 }

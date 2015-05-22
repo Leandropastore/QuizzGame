@@ -27,5 +27,6 @@ public interface Comm extends Remote{
     public String fetchNextServerAddress() throws RemoteException;
     public Participant findParticipantById(int id) throws RemoteException;
     public void placeToken(boolean state,Participant participant) throws RemoteException;
+    public Participant checkLastAnswer() throws RemoteException;
     
 }
