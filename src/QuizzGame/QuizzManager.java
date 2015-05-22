@@ -159,6 +159,7 @@ public class QuizzManager {
                     local.setCurrentQuestion(new Question(question, answer));
                     while (!local.checkParticipantsNotReady());
                     local.setCurrentQuestion(null);
+                    local.setLastAnswer(null);
                     local.placeToken(false, localParticipant);
                 } else {
                     if (!localParticipant.isReady()) {

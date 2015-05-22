@@ -229,4 +229,10 @@ public class QuizzGame implements Comm, Serializable {
 
     }
 
+    void setLastAnswer(Participant participant) {
+    
+        this.lastAnswer = participant;
+    
+    }
+
 }
