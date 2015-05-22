@@ -125,7 +125,6 @@ public class QuizzGame implements Comm, Serializable {
     @Override
     public void cycleQuestioner() {
 
-        this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(false);
         this.currentQuestioner = this.nextQuestioner;
         this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
         if (this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) == this.participants.size() - 1) {

@@ -41,7 +41,9 @@ public class QuizzManager {
         double elapsedSeconds;
 
         Scanner scanner = new Scanner(System.in);
-
+        //                  VARIABLES
+//------------------------------------------------------------------------------
+        //                  SETUP
         System.out.println("\nAre you starting as a server? (yes / no)");
         response = scanner.nextLine();
         if (response.equals("no")) {
@@ -78,9 +80,9 @@ public class QuizzManager {
             } catch (NotBoundException ex) {
                 Logger.getLogger(QuizzManager.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-
-        while (true) {
+        }//                            SETUP
+//----------------------------------------------------------------------------------
+        while (true) {//               CLIENT
 
             if (remote != null) {
                 if (remote.findParticipantById(localParticipant.getId()).hasToken()) {
@@ -110,6 +112,7 @@ public class QuizzManager {
                         }
                     }
                     remote.setCurrentQuestion(null);
+                    remote.placeToken(false, localParticipant);
                 } else {
                     if (!remote.findParticipantById(localParticipant.getId()).isReady()) {
 
@@ -141,9 +144,9 @@ public class QuizzManager {
                         }
                     }
                 }
-
-            } 
-            else {
+//                           CLIENT
+            } //--------------------------------------------------------------------------------------------
+            else {//         SERVER
                 if (local.findParticipantById(localParticipant.getId()).hasToken()) {
                     System.out.println("Are you ready to write your question? (if yes, press enter)");
                     scanner.nextLine();
@@ -159,6 +162,7 @@ public class QuizzManager {
                     local.setCurrentQuestion(new Question(question, answer));
                     while (!local.checkParticipantsNotReady());
                     local.setCurrentQuestion(null);
+                    local.placeToken(false, localParticipant);
                 } else {
                     if (!localParticipant.isReady()) {
 
