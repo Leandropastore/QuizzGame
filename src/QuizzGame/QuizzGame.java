@@ -156,15 +156,14 @@ public class QuizzGame implements Comm, Serializable {
     @Override
     public boolean sendAnswer(String answer, Participant participant, double elapsedTime) {
 
-        participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(false);
-        participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))).setReady(false);
-
         if (this.currentQuestion.checkAnswer(answer)) {
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).addScore(1);
             participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).subtractScore(1);
             this.lastAnswer = participant;
             this.lastAnswer.setReady(true);
             System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName() + " got the question right!");
+            participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(false);
+            participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))).setReady(false);
             return true;
         } else {
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).subtractScore(1);
@@ -172,6 +171,8 @@ public class QuizzGame implements Comm, Serializable {
             this.lastAnswer = participant;
             this.lastAnswer.setReady(false);
             System.out.println(participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).getName() + " got the question wrong!");
+            participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(false);
+            participants.get(participants.indexOf(this.findParticipantById(this.currentQuestioner.getId()))).setReady(false);
             return false;
         }
     }

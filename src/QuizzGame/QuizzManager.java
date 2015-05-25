@@ -100,6 +100,8 @@ public class QuizzManager {
                     answer = scanner.nextLine();
 
                     remote.setCurrentQuestion(new Question(question, answer));
+                    remote.placeToken(false, localParticipant);
+                    
                     while (!remote.checkParticipantsNotReady()){
                         lastAnswer = remote.checkLastAnswer();
                         if(lastAnswer!=null){
@@ -111,8 +113,10 @@ public class QuizzManager {
                             }
                         }
                     }
+                    
                     remote.setCurrentQuestion(null);
-                    remote.placeToken(false, localParticipant);
+                    remote.cycleQuestioner();
+                    
                 } else {
                     if (!remote.findParticipantById(localParticipant.getId()).isReady()) {
 
@@ -124,7 +128,8 @@ public class QuizzManager {
                         }
 
                     }
-                    if (remote.checkParticipantsReady() && remote.isQuestionReady()) {
+                    if (remote.checkParticipantsReady()) {
+                        while(!remote.isQuestionReady());
                         System.out.println(remote.getCurrentQuestion().getQuestion());
                         System.out.println("Answer?");
                         tStart = System.currentTimeMillis();
@@ -137,11 +142,7 @@ public class QuizzManager {
                         } else {
                             System.out.println("You got it wrong! =(");
                         }
-                        localParticipant.setReady(false);
                         while(!remote.checkParticipantsNotReady());
-                        if (remote.amINext(localParticipant)) {
-                            remote.cycleQuestioner();
-                        }
                     }
                 }
 //                           CLIENT
@@ -160,22 +161,27 @@ public class QuizzManager {
                     answer = scanner.nextLine();
 
                     local.setCurrentQuestion(new Question(question, answer));
-                    while (!local.checkParticipantsNotReady());
-                    local.setCurrentQuestion(null);
+                    
                     local.placeToken(false, localParticipant);
+                    
+                    while (!local.checkParticipantsNotReady());
+                    
+                    local.setCurrentQuestion(null);
+                    local.cycleQuestioner();
+                    
                 } else {
-                    if (!localParticipant.isReady()) {
+                    if (!local.findParticipantById(localParticipant.getId()).isReady()) {
 
                         System.out.println("Press enter if you are ready...");
                         scanner.nextLine();
                         local.changeReady(localParticipant, true);
-                        localParticipant.setReady(true);
                         if (!local.checkParticipantsReady()) {
                             System.out.println("Waiting for other participants...");
                         }
 
                     }
-                    if (local.checkParticipantsReady() && local.isQuestionReady()) {
+                    if (local.checkParticipantsReady()) {
+                        while(!local.isQuestionReady());
                         System.out.println(local.getCurrentQuestion().getQuestion());
                         System.out.println("Answer?");
                         tStart = System.currentTimeMillis();
@@ -188,11 +194,7 @@ public class QuizzManager {
                         } else {
                             System.out.println("You got it wrong! =(");
                         }
-                        localParticipant.setReady(false);
                         while(!local.checkParticipantsNotReady());
-                        if (local.amINext(localParticipant)) {
-                            local.cycleQuestioner();
-                        }
                     }
 
                 }
