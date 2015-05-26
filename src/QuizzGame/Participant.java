@@ -95,6 +95,7 @@ public class Participant implements Serializable{
         String string = "\n\nParticipant ID: "+this.getId();
         string += "\nParticipant Name: "+this.getName();
         string += "\nScore: "+this.getScore();
+        string += "\nIs questioner: "+this.hasToken();
         
         return string;
     

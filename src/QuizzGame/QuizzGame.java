@@ -24,6 +24,18 @@ public class QuizzGame implements Comm, Serializable {
     private Participant nextQuestioner;
     private Participant lastAnswer;
 
+    private boolean cycled;
+
+    @Override
+    public boolean isCycled() {
+        return cycled;
+    }
+
+    @Override
+    public void setCycled(boolean cycled) {
+        this.cycled = cycled;
+    }
+    
     public void printParticipants() {
         System.out.println("Participants: ");
         for (Participant participant : participants) {
@@ -48,6 +60,7 @@ public class QuizzGame implements Comm, Serializable {
 
         this.id = 0;
         this.currentQuestion = null;
+        this.cycled = false;
 
     }
 
@@ -129,8 +142,14 @@ public class QuizzGame implements Comm, Serializable {
         this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
         if (this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) == this.participants.size() - 1) {
             this.nextQuestioner = this.participants.get(0);
+            System.out.println("weeeeeeeeeeeee if");
+            System.out.println(this.currentQuestioner);
+            System.out.println(this.nextQuestioner);
         } else {
             this.nextQuestioner = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) + 1);
+            System.out.println("weeeeeeeeeeeee else");
+            System.out.println(this.currentQuestioner);
+            System.out.println(this.nextQuestioner);
         }
 
     }

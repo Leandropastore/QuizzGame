@@ -89,6 +89,7 @@ public class QuizzManager {
                     System.out.println("Are you ready to write your question? (if yes, press enter)");
                     scanner.nextLine();
 
+                    remote.setCycled(false);
                     remote.changeReady(localParticipant, true);
                     while (!remote.checkParticipantsReady());
 
@@ -116,9 +117,10 @@ public class QuizzManager {
                     
                     remote.setCurrentQuestion(null);
                     remote.cycleQuestioner();
+                    remote.setCycled(true);
                     
                 } else {
-                    if (!remote.findParticipantById(localParticipant.getId()).isReady()) {
+                    if (!remote.findParticipantById(localParticipant.getId()).isReady() && !remote.findParticipantById(localParticipant.getId()).hasToken()) {
 
                         System.out.println("Press enter if you are ready...");
                         scanner.nextLine();
@@ -143,6 +145,7 @@ public class QuizzManager {
                             System.out.println("You got it wrong! =(");
                         }
                         while(!remote.checkParticipantsNotReady());
+                        while(!remote.isCycled());
                     }
                 }
 //                           CLIENT
@@ -152,6 +155,7 @@ public class QuizzManager {
                     System.out.println("Are you ready to write your question? (if yes, press enter)");
                     scanner.nextLine();
 
+                    local.setCycled(false);
                     local.changeReady(localParticipant, true);
                     while (!local.checkParticipantsReady());
 
@@ -168,9 +172,10 @@ public class QuizzManager {
                     
                     local.setCurrentQuestion(null);
                     local.cycleQuestioner();
+                    local.setCycled(true);
                     
                 } else {
-                    if (!local.findParticipantById(localParticipant.getId()).isReady()) {
+                    if (!local.findParticipantById(localParticipant.getId()).isReady() && !local.findParticipantById(localParticipant.getId()).hasToken()) {
 
                         System.out.println("Press enter if you are ready...");
                         scanner.nextLine();
@@ -195,6 +200,7 @@ public class QuizzManager {
                             System.out.println("You got it wrong! =(");
                         }
                         while(!local.checkParticipantsNotReady());
+                        while(!local.isCycled());
                     }
 
                 }
