@@ -11,11 +11,14 @@ import java.io.Serializable;
  *
  * @author Leandro
  */
-public class Participant implements Serializable{
+public class Participant implements Serializable,Comparable<Participant>{
     private String IPAddress;
     private int score;
     private String name;
+    
     private int id;
+    private double time;
+    
     private boolean ready;
     private boolean token;
 
@@ -86,6 +89,13 @@ public class Participant implements Serializable{
         this.setId(id);
         this.setScore(0);
         this.setReady(false);
+    
+    }
+    
+    @Override
+    public int compareTo(Participant participant){
+    
+        return Integer.valueOf(this.score).compareTo(participant.getScore());
     
     }
     

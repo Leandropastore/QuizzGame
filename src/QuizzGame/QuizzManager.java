@@ -25,13 +25,17 @@ public class QuizzManager {
     public static void main(String[] args) throws java.net.UnknownHostException, RemoteException {
 
         QuizzGame local = new QuizzGame();
+
         Participant localParticipant = null;
         Participant lastAnswer = null;
+
         Comm remote = null;
+
         String answer;
         String response;
         String name;
         String ipAddress = null;
+
         Registry serverRegistry;
         Registry clientRegistry;
 
@@ -39,6 +43,8 @@ public class QuizzManager {
         long tEnd;
         long tDelta;
         double elapsedSeconds;
+
+        boolean running = true;
 
         Scanner scanner = new Scanner(System.in);
         //                  VARIABLES
@@ -82,18 +88,25 @@ public class QuizzManager {
             }
         }//                            SETUP
 //----------------------------------------------------------------------------------
-        while (true) {//               CLIENT
+        while (running) {//               CLIENT
 
             if (remote != null) {
                 if (remote.findParticipantById(localParticipant.getId()).hasToken()) {
                     System.out.println("Are you ready to write your question? (if yes, press enter)");
                     scanner.nextLine();
 
-                    remote.setCycled(false);
                     remote.changeReady(localParticipant, true);
-                    while (!remote.checkParticipantsReady());
+                    while (!remote.checkParticipantsReady()) {
 
-                    
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+
+                    }
+                    remote.setCycled(false);
+
                     remote.setLastAnswer(null);
                     System.out.println("Please, write your question.");
                     String question = scanner.nextLine();
@@ -102,36 +115,55 @@ public class QuizzManager {
 
                     remote.setCurrentQuestion(new Question(question, answer));
                     remote.placeToken(false, localParticipant);
-                    
-                    while (!remote.checkParticipantsNotReady()){
+
+                    while (!remote.checkParticipantsNotReady()) {
                         lastAnswer = remote.checkLastAnswer();
-                        if(lastAnswer!=null){
-                            if(lastAnswer.isReady()){
-                                System.out.println(lastAnswer.getName()+" got the question right!");
-                            }
-                            else{
-                                System.out.println(lastAnswer.getName()+" got the question wrong!");
+                        if (lastAnswer != null) {
+                            if (lastAnswer.isReady()) {
+                                System.out.println(lastAnswer.getName() + " got the question right!");
+                            } else {
+                                System.out.println(lastAnswer.getName() + " got the question wrong!");
                             }
                         }
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
                     }
-                    
+
                     remote.setCurrentQuestion(null);
                     remote.cycleQuestioner();
                     remote.setCycled(true);
-                    
+
                 } else {
                     if (!remote.findParticipantById(localParticipant.getId()).isReady() && !remote.findParticipantById(localParticipant.getId()).hasToken()) {
 
+                        System.out.println(remote.printParticipants());
                         System.out.println("Press enter if you are ready...");
                         scanner.nextLine();
                         remote.changeReady(localParticipant, true);
                         if (!remote.checkParticipantsReady()) {
                             System.out.println("Waiting for other participants...");
                         }
+                        while (!remote.checkParticipantsReady()) {
 
-                    }
-                    if (remote.checkParticipantsReady()) {
-                        while(!remote.isQuestionReady());
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+
+                        }
+                        while (!remote.isQuestionReady()) {
+
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+
+                        }
                         System.out.println(remote.getCurrentQuestion().getQuestion());
                         System.out.println("Answer?");
                         tStart = System.currentTimeMillis();
@@ -144,8 +176,32 @@ public class QuizzManager {
                         } else {
                             System.out.println("You got it wrong! =(");
                         }
-                        while(!remote.checkParticipantsNotReady());
-                        while(!remote.isCycled());
+                        while (!remote.checkParticipantsNotReady()) {
+
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+
+                        }
+                        while (!remote.isCycled()) {
+
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+
+                        }
+                        if (!remote.findParticipantById(localParticipant.getId()).hasToken()) {
+                            System.out.println("Do you want to leave? (yes / no)");
+                            response = scanner.nextLine();
+                            if (response.equals("yes")) {
+                                running = false;
+                                remote.removeParticipant(localParticipant);
+                            }
+                        }
                     }
                 }
 //                           CLIENT
@@ -155,9 +211,17 @@ public class QuizzManager {
                     System.out.println("Are you ready to write your question? (if yes, press enter)");
                     scanner.nextLine();
 
-                    local.setCycled(false);
                     local.changeReady(localParticipant, true);
-                    while (!local.checkParticipantsReady());
+                    while (!local.checkParticipantsReady()) {
+
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+
+                    }
+                    local.setCycled(false);
 
                     System.out.println("Please, write your question.");
                     String question = scanner.nextLine();
@@ -165,28 +229,51 @@ public class QuizzManager {
                     answer = scanner.nextLine();
 
                     local.setCurrentQuestion(new Question(question, answer));
-                    
+
                     local.placeToken(false, localParticipant);
-                    
-                    while (!local.checkParticipantsNotReady());
-                    
+
+                    while (!local.checkParticipantsNotReady()) {
+
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+
+                    }
+
                     local.setCurrentQuestion(null);
                     local.cycleQuestioner();
                     local.setCycled(true);
-                    
+
                 } else {
                     if (!local.findParticipantById(localParticipant.getId()).isReady() && !local.findParticipantById(localParticipant.getId()).hasToken()) {
 
+                        System.out.println(local.printParticipants());
                         System.out.println("Press enter if you are ready...");
                         scanner.nextLine();
                         local.changeReady(localParticipant, true);
                         if (!local.checkParticipantsReady()) {
                             System.out.println("Waiting for other participants...");
                         }
+                        while (!local.checkParticipantsReady()) {
 
-                    }
-                    if (local.checkParticipantsReady()) {
-                        while(!local.isQuestionReady());
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+
+                        }
+                        while (!local.isQuestionReady()) {
+
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+
+                        }
                         System.out.println(local.getCurrentQuestion().getQuestion());
                         System.out.println("Answer?");
                         tStart = System.currentTimeMillis();
@@ -199,10 +286,29 @@ public class QuizzManager {
                         } else {
                             System.out.println("You got it wrong! =(");
                         }
-                        while(!local.checkParticipantsNotReady());
-                        while(!local.isCycled());
+                        while (!local.checkParticipantsNotReady()) {
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        while (!local.isCycled()) {
+                            try {
+                                Thread.sleep(300);
+                            } catch (InterruptedException ex) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        if (!local.findParticipantById(localParticipant.getId()).hasToken()) {
+                            System.out.println("Do you want to leave? (yes / no)");
+                            response = scanner.nextLine();
+                            if (response.equals("yes")) {
+                                running = false;
+                                local.removeParticipant(localParticipant);
+                            }
+                        }
                     }
-
                 }
 
             }

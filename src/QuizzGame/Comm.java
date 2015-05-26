@@ -15,7 +15,6 @@ import java.rmi.RemoteException;
 public interface Comm extends Remote{
     
     public Participant addParticipant(String IPAddress, String name) throws RemoteException;
-    public boolean amINext(Participant participant) throws RemoteException;
     public void cycleQuestioner() throws RemoteException;
     public Question getCurrentQuestion() throws RemoteException;
     public void setCurrentQuestion(Question currentQuestion) throws RemoteException;
@@ -31,5 +30,6 @@ public interface Comm extends Remote{
     public void setLastAnswer(Participant participant) throws RemoteException;
     public boolean isCycled() throws RemoteException;
     public void setCycled(boolean cycled) throws RemoteException;
-    
+    public String printParticipants() throws RemoteException;
+    public void removeParticipant(Participant participant) throws RemoteException;
 }

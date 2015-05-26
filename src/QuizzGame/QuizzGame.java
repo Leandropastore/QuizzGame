@@ -7,6 +7,7 @@ package QuizzGame;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 /**
@@ -30,17 +31,18 @@ public class QuizzGame implements Comm, Serializable {
     public boolean isCycled() {
         return cycled;
     }
-
+    
     @Override
     public void setCycled(boolean cycled) {
         this.cycled = cycled;
     }
     
-    public void printParticipants() {
-        System.out.println("Participants: ");
-        for (Participant participant : participants) {
-            System.out.println(participant);
-        }
+    @Override
+    public String printParticipants() {
+        String string = "Participants:";
+        for (Participant participant : participants) 
+            string += participant.toString();
+        return string;
 
     }
 
@@ -63,7 +65,7 @@ public class QuizzGame implements Comm, Serializable {
         this.cycled = false;
 
     }
-
+    
     public void setup(Participant participant) {
 
         this.currentQuestioner = participant;
@@ -103,6 +105,21 @@ public class QuizzGame implements Comm, Serializable {
     }
 
     @Override
+    public void removeParticipant(Participant participant) {
+
+        
+        if(participant.getId()==this.nextQuestioner.getId()){
+            if(participants.indexOf(this.findParticipantById(participant.getId()))==participants.size()-1)
+                this.nextQuestioner = participants.get(0);
+            else
+                this.nextQuestioner = participants.get(participants.indexOf(this.findParticipantById(participant.getId()))+1);
+        }
+        this.participants.remove(this.findParticipantById(participant.getId()));
+        System.out.println(participant.getName() + " left the game");
+
+    }
+    
+    @Override
     public void changeReady(Participant participant, boolean state) {
 
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setReady(state);
@@ -110,18 +127,6 @@ public class QuizzGame implements Comm, Serializable {
         if (state) {
             System.out.println(participant.getName() + " is ready.");
         }
-
-    }
-
-    @Override
-    public boolean amINext(Participant participant) {
-
-        int nextIndex = this.participants.indexOf(this.findParticipantById(nextQuestioner.getId()));
-        int requestIndex = this.participants.indexOf(this.findParticipantById(participant.getId()));
-        if (nextIndex == requestIndex) {
-            return true;
-        }
-        return false;
 
     }
 
@@ -138,20 +143,21 @@ public class QuizzGame implements Comm, Serializable {
     @Override
     public void cycleQuestioner() {
 
-        this.currentQuestioner = this.nextQuestioner;
-        this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
-        if (this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) == this.participants.size() - 1) {
-            this.nextQuestioner = this.participants.get(0);
-            System.out.println("weeeeeeeeeeeee if");
-            System.out.println(this.currentQuestioner);
-            System.out.println(this.nextQuestioner);
-        } else {
-            this.nextQuestioner = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) + 1);
-            System.out.println("weeeeeeeeeeeee else");
-            System.out.println(this.currentQuestioner);
-            System.out.println(this.nextQuestioner);
+        if(participants.indexOf(this.findParticipantById(this.nextQuestioner.getId()))!=0){
+            this.currentQuestioner = this.nextQuestioner;
+            this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
+            if (this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) == this.participants.size() - 1) {
+                this.nextQuestioner = this.participants.get(0);
+            } else {
+                this.nextQuestioner = this.participants.get(this.participants.indexOf(this.findParticipantById(this.currentQuestioner.getId())) + 1);
+            }
         }
-
+        else{
+            Collections.sort(participants);
+            this.currentQuestioner = participants.get(0);
+            this.nextQuestioner = participants.get(1);
+            this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
+        }
     }
 
     @Override
@@ -195,28 +201,6 @@ public class QuizzGame implements Comm, Serializable {
             return false;
         }
     }
-    /*
-     public void serverMenu(){
-    
-     Scanner scanner = new Scanner(System.in);
-     System.out.println("Are you ready to write your question? (if yes, press enter)");
-     scanner.nextLine();
-        
-     participants.get(participants.indexOf(this.findParticipantById(this.currentServer.getId()))).setReady(true);
-     while(!checkParticipantsReady());
-     this.printParticipants();
-        
-     System.out.println("Please, write your question.");
-     String question = scanner.nextLine();
-     System.out.println("What is the answer to that question?");
-     String answer = scanner.nextLine();
-        
-     this.currentQuestion = new Question(question,answer);
-     while(!this.checkParticipantsNotReady());
-     this.currentQuestion = null;
-        
-    
-     }*/
 
     @Override
     public boolean checkParticipantsReady() {
