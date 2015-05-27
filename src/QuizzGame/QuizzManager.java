@@ -88,7 +88,7 @@ public class QuizzManager {
             }
         }//                            SETUP
 //----------------------------------------------------------------------------------
-        while (running) {//               CLIENT
+        while (running) {//            CLIENT
 
             if (remote != null) {
                 if (remote.findParticipantById(localParticipant.getId()).hasToken()) {
@@ -114,7 +114,6 @@ public class QuizzManager {
                     answer = scanner.nextLine();
 
                     remote.setCurrentQuestion(new Question(question, answer));
-                    remote.placeToken(false, localParticipant);
 
                     while (!remote.checkParticipantsNotReady()) {
                         lastAnswer = remote.checkLastAnswer();
@@ -229,9 +228,7 @@ public class QuizzManager {
                     answer = scanner.nextLine();
 
                     local.setCurrentQuestion(new Question(question, answer));
-
-                    local.placeToken(false, localParticipant);
-
+                    
                     while (!local.checkParticipantsNotReady()) {
 
                         try {

@@ -111,7 +111,6 @@ public class QuizzGame implements Comm, Serializable {
 
     }
 
-    @Override
     public void placeToken(boolean state, Participant participant) {
 
         participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setToken(state);
@@ -240,13 +239,6 @@ public class QuizzGame implements Comm, Serializable {
             }
         }
         return true;
-
-    }
-
-    @Override
-    public String fetchNextServerAddress() {
-
-        return this.nextQuestioner.getIPAddress();
 
     }
 
