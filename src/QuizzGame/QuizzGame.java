@@ -75,6 +75,30 @@ public class QuizzGame implements Comm, Serializable {
 
     }
 
+    public Participant findBiggestTimestamp() {
+
+        Participant score = participants.get(0);
+        for (Participant p : participants) {
+            if (p.getTimestamp() > score.getTimestamp()&&!p.hasToken()) {
+                score = p;
+            }
+        }
+        return score;
+
+    }
+    
+    public Participant findSmallestTimestamp() {
+
+        Participant score = participants.get(0);
+        for (Participant p : participants) {
+            if (p.getTimestamp() < score.getTimestamp()&&!p.hasToken()) {
+                score = p;
+            }
+        }
+        return score;
+
+    }
+    
     @Override
     public Participant findParticipantById(int id) {
 
@@ -143,6 +167,10 @@ public class QuizzGame implements Comm, Serializable {
     @Override
     public void cycleQuestioner() {
 
+        participants.get(participants.indexOf(this.findBiggestTimestamp())).subtractScore(1);
+        participants.get(participants.indexOf(this.findSmallestTimestamp())).addScore(1);
+        this.placeToken(false, this.findParticipantById(this.currentQuestioner.getId()));
+        
         if(participants.indexOf(this.findParticipantById(this.nextQuestioner.getId()))!=0){
             this.currentQuestioner = this.nextQuestioner;
             this.participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).setToken(true);
@@ -181,6 +209,7 @@ public class QuizzGame implements Comm, Serializable {
     @Override
     public boolean sendAnswer(String answer, Participant participant, double elapsedTime) {
 
+        participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).setTimestamp(elapsedTime);
         if (this.currentQuestion.checkAnswer(answer)) {
             participants.get(participants.indexOf(this.findParticipantById(participant.getId()))).addScore(1);
             participants.get(participants.indexOf(this.findParticipantById(currentQuestioner.getId()))).subtractScore(1);

@@ -17,10 +17,18 @@ public class Participant implements Serializable,Comparable<Participant>{
     private String name;
     
     private int id;
-    private double time;
+    private double timestamp;
     
     private boolean ready;
     private boolean token;
+
+    public double getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(double timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public boolean hasToken() {
         return token;
